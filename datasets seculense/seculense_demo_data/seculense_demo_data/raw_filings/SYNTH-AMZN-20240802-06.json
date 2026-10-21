@@ -1,0 +1,55 @@
+{
+  "ticker": "AMZN",
+  "company_name": "Amazon.com, Inc.",
+  "cik": "0001018724",
+  "accession_number": "SYNTH-AMZN-20240802-06",
+  "filing_type": "10-Q",
+  "filing_date": "2024-08-02",
+  "accepted_timestamp": "2024-08-02T20:00:00Z",
+  "fiscal_period_end": "2024-09-30",
+  "filing_url": null,
+  "raw_document_path": "raw_filings/SYNTH-AMZN-20240802-06.json",
+  "is_synthetic": true,
+  "notice": "Synthetic demonstration filing; not an actual SEC filing.",
+  "sections": [
+    {
+      "section_name": "Item 1A: Risk Factors",
+      "paragraphs": [
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AMZN_2024_margin_compression",
+          "paragraph_text": "Our ability to maintain profitability depends on product mix, operating efficiency, and our ability to manage costs as the business scales. During the current reporting period, we have observed longer lead times and less predictable supplier capacity, which may increase working-capital requirements.",
+          "risk_category": "margin_compression"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AMZN_2024_customer_churn",
+          "paragraph_text": "A significant portion of revenue is associated with a limited number of customers or distribution partners. The loss of a major customer could adversely affect results.",
+          "risk_category": "customer_churn"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AMZN_2024_supply_chain",
+          "paragraph_text": "Supplier capacity constraints and higher input costs could reduce our ability to meet demand and may pressure gross margins.",
+          "risk_category": "supply_chain"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AMZN_2024_receivables_revenue",
+          "paragraph_text": "Delays in collecting customer payments may increase accounts receivable and working-capital requirements. Credit losses or disputes could affect cash flow.",
+          "risk_category": "receivables_revenue"
+        }
+      ]
+    },
+    {
+      "section_name": "Item 7: MD&A",
+      "paragraphs": [
+        {
+          "paragraph_id": "SYNTH-AMZN-20240802-06_MDNA_1",
+          "paragraph_text": "Management continues to monitor revenue growth, operating expenses, working capital, and capital allocation. Results may be affected by customer demand, product mix, foreign exchange movements, and changes in the cost of operations. These statements are illustrative synthetic content created for software testing and are not extracted from an actual filing.",
+          "risk_category": "other"
+        }
+      ]
+    }
+  ]
+}

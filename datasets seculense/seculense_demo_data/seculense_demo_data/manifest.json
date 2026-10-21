@@ -1,0 +1,16 @@
+{
+  "dataset_name": "SecuLense Demo Dataset",
+  "version": "1.0.0",
+  "generated_on": "2026-10-21",
+  "synthetic": true,
+  "companies": 5,
+  "filings": 30,
+  "daily_price_rows": 3915,
+  "risk_score_rows": 110,
+  "filing_diff_rows": 64,
+  "date_range": {
+    "prices_start": "2023-01-01",
+    "prices_end": "2025-12-31"
+  },
+  "warning": "Synthetic data for development only; not real SEC filing content or actual stock prices."
+}

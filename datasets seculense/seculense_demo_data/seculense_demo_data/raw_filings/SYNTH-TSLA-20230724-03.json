@@ -1,0 +1,55 @@
+{
+  "ticker": "TSLA",
+  "company_name": "Tesla, Inc.",
+  "cik": "0001318605",
+  "accession_number": "SYNTH-TSLA-20230724-03",
+  "filing_type": "10-Q",
+  "filing_date": "2023-07-24",
+  "accepted_timestamp": "2023-07-24T20:00:00Z",
+  "fiscal_period_end": "2023-09-30",
+  "filing_url": null,
+  "raw_document_path": "raw_filings/SYNTH-TSLA-20230724-03.json",
+  "is_synthetic": true,
+  "notice": "Synthetic demonstration filing; not an actual SEC filing.",
+  "sections": [
+    {
+      "section_name": "Item 1A: Risk Factors",
+      "paragraphs": [
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "TSLA_2023_supply_chain",
+          "paragraph_text": "A limited number of suppliers provide certain critical components. Replacing these suppliers may require time and significant expense.",
+          "risk_category": "supply_chain"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "TSLA_2023_regulatory_legal",
+          "paragraph_text": "Regulatory reviews and legal proceedings could result in additional expenses, operational restrictions, penalties, or reputational harm.",
+          "risk_category": "regulatory_legal"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "TSLA_2023_competition_market_demand",
+          "paragraph_text": "Demand may be affected by macroeconomic conditions, customer budgets, product cycles, and the availability of competing products.",
+          "risk_category": "competition_market_demand"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "TSLA_2023_margin_compression",
+          "paragraph_text": "If we cannot pass increased costs to customers, our operating margins and cash flow could be adversely affected.",
+          "risk_category": "margin_compression"
+        }
+      ]
+    },
+    {
+      "section_name": "Item 7: MD&A",
+      "paragraphs": [
+        {
+          "paragraph_id": "SYNTH-TSLA-20230724-03_MDNA_1",
+          "paragraph_text": "Management continues to monitor revenue growth, operating expenses, working capital, and capital allocation. Results may be affected by customer demand, product mix, foreign exchange movements, and changes in the cost of operations. These statements are illustrative synthetic content created for software testing and are not extracted from an actual filing.",
+          "risk_category": "other"
+        }
+      ]
+    }
+  ]
+}

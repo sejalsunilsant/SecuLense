@@ -1,0 +1,17 @@
+{
+  "name": "seculense-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dashboard": "node start.mjs",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {}
+}

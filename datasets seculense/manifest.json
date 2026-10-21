@@ -1,0 +1,24 @@
+{
+  "label": "SYNTHETIC DEMONSTRATION DATA - NOT REAL SEC OR MARKET DATA",
+  "data_source": "SYNTHETIC_DEMO",
+  "generated_at": "2026-10-20T19:00:30.220342+00:00",
+  "seed": 42,
+  "format": "csv",
+  "benchmark_ticker": "DEMOBENCH",
+  "calendar_note": "US federal-holiday approximation, not the exact NYSE calendar",
+  "embedded_signal": "Filings introducing serious new risk paragraphs are followed by mild negative drift (simulator artefact).",
+  "counts": {
+    "companies": 20,
+    "filings": 808,
+    "amendments": 8,
+    "filing_sections": 14385,
+    "daily_prices": 56911,
+    "fundamentals": 800,
+    "risk_labels": 1530,
+    "shock_events": 286
+  },
+  "date_range": [
+    "2015-06-01",
+    "2026-03-31"
+  ]
+}

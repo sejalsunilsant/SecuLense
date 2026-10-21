@@ -1,0 +1,38 @@
+[
+  {
+    "question": "What might it mean if accounts receivable grows much faster than revenue?",
+    "answer": "It may indicate slower collections, changed payment terms, customer disputes, or other working-capital pressures. It is a signal to investigate, not proof of a problem.",
+    "category": "working_capital",
+    "difficulty": "beginner"
+  },
+  {
+    "question": "Why can a supplier concentration be risky?",
+    "answer": "If a critical supplier experiences disruption, the company may have limited immediate alternatives, potentially affecting production, delivery, costs, or revenue.",
+    "category": "supply_chain",
+    "difficulty": "beginner"
+  },
+  {
+    "question": "Does a negative return after a filing prove the filing caused the decline?",
+    "answer": "No. Other news, market movements, sector performance, and expectations can affect returns. Event studies identify timing and associations, not causation by themselves.",
+    "category": "event_study",
+    "difficulty": "intermediate"
+  },
+  {
+    "question": "What is the difference between a risk score and a predicted probability?",
+    "answer": "A risk score summarizes selected filing changes according to a scoring method. A predicted probability is a model estimate of a defined outcome and should be interpreted only after validation and calibration.",
+    "category": "model_interpretation",
+    "difficulty": "intermediate"
+  },
+  {
+    "question": "What does margin compression mean?",
+    "answer": "It means a company's profit margin is narrowing, potentially because costs rise faster than revenue or competitive pressures limit pricing.",
+    "category": "profitability",
+    "difficulty": "beginner"
+  },
+  {
+    "question": "Why should a model use chronological train/test splits for market prediction?",
+    "answer": "A chronological split better reflects forecasting into the future and reduces the chance of using future information during training or evaluation.",
+    "category": "ml_validation",
+    "difficulty": "advanced"
+  }
+]

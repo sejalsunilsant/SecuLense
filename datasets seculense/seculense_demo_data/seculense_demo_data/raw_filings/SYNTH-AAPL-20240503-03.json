@@ -1,0 +1,55 @@
+{
+  "ticker": "AAPL",
+  "company_name": "Apple Inc.",
+  "cik": "0000320193",
+  "accession_number": "SYNTH-AAPL-20240503-03",
+  "filing_type": "10-Q",
+  "filing_date": "2024-05-03",
+  "accepted_timestamp": "2024-05-03T20:00:00Z",
+  "fiscal_period_end": "2024-09-30",
+  "filing_url": null,
+  "raw_document_path": "raw_filings/SYNTH-AAPL-20240503-03.json",
+  "is_synthetic": true,
+  "notice": "Synthetic demonstration filing; not an actual SEC filing.",
+  "sections": [
+    {
+      "section_name": "Item 1A: Risk Factors",
+      "paragraphs": [
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AAPL_2024_supply_chain",
+          "paragraph_text": "Supplier capacity constraints and higher input costs could reduce our ability to meet demand and may pressure gross margins.",
+          "risk_category": "supply_chain"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AAPL_2024_regulatory_legal",
+          "paragraph_text": "Regulatory reviews and legal proceedings could result in additional expenses, operational restrictions, penalties, or reputational harm.",
+          "risk_category": "regulatory_legal"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AAPL_2024_customer_churn",
+          "paragraph_text": "Customers may delay purchases, reduce spending, or switch to competing offerings, which could affect revenue growth and retention.",
+          "risk_category": "customer_churn"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AAPL_2024_margin_compression",
+          "paragraph_text": "Our ability to maintain profitability depends on product mix, operating efficiency, and our ability to manage costs as the business scales.",
+          "risk_category": "margin_compression"
+        }
+      ]
+    },
+    {
+      "section_name": "Item 7: MD&A",
+      "paragraphs": [
+        {
+          "paragraph_id": "SYNTH-AAPL-20240503-03_MDNA_1",
+          "paragraph_text": "Management continues to monitor revenue growth, operating expenses, working capital, and capital allocation. Results may be affected by customer demand, product mix, foreign exchange movements, and changes in the cost of operations. These statements are illustrative synthetic content created for software testing and are not extracted from an actual filing.",
+          "risk_category": "other"
+        }
+      ]
+    }
+  ]
+}

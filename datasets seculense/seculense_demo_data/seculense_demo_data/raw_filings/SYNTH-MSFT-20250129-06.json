@@ -1,0 +1,55 @@
+{
+  "ticker": "MSFT",
+  "company_name": "Microsoft Corporation",
+  "cik": "0000789019",
+  "accession_number": "SYNTH-MSFT-20250129-06",
+  "filing_type": "10-Q",
+  "filing_date": "2025-01-29",
+  "accepted_timestamp": "2025-01-29T20:00:00Z",
+  "fiscal_period_end": "2025-09-30",
+  "filing_url": null,
+  "raw_document_path": "raw_filings/SYNTH-MSFT-20250129-06.json",
+  "is_synthetic": true,
+  "notice": "Synthetic demonstration filing; not an actual SEC filing.",
+  "sections": [
+    {
+      "section_name": "Item 1A: Risk Factors",
+      "paragraphs": [
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "MSFT_2025_cybersecurity",
+          "paragraph_text": "We depend on reliable technology systems. A failure or security incident affecting our systems or third-party providers could harm customer trust and business continuity. During the current reporting period, we have observed longer lead times and less predictable supplier capacity, which may increase working-capital requirements.",
+          "risk_category": "cybersecurity"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "MSFT_2025_regulatory_legal",
+          "paragraph_text": "Regulatory reviews and legal proceedings could result in additional expenses, operational restrictions, penalties, or reputational harm.",
+          "risk_category": "regulatory_legal"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "MSFT_2025_competition_market_demand",
+          "paragraph_text": "Demand may be affected by macroeconomic conditions, customer budgets, product cycles, and the availability of competing products.",
+          "risk_category": "competition_market_demand"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "MSFT_2025_debt_liquidity",
+          "paragraph_text": "Our ability to meet debt obligations depends on generating sufficient operating cash flow. A sustained decline in cash generation could affect liquidity and our ability to fund planned investments.",
+          "risk_category": "debt_liquidity"
+        }
+      ]
+    },
+    {
+      "section_name": "Item 7: MD&A",
+      "paragraphs": [
+        {
+          "paragraph_id": "SYNTH-MSFT-20250129-06_MDNA_1",
+          "paragraph_text": "Management continues to monitor revenue growth, operating expenses, working capital, and capital allocation. Results may be affected by customer demand, product mix, foreign exchange movements, and changes in the cost of operations. These statements are illustrative synthetic content created for software testing and are not extracted from an actual filing.",
+          "risk_category": "other"
+        }
+      ]
+    }
+  ]
+}

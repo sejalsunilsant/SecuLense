@@ -1,0 +1,55 @@
+{
+  "ticker": "AMZN",
+  "company_name": "Amazon.com, Inc.",
+  "cik": "0001018724",
+  "accession_number": "SYNTH-AMZN-20230728-03",
+  "filing_type": "10-Q",
+  "filing_date": "2023-07-28",
+  "accepted_timestamp": "2023-07-28T20:00:00Z",
+  "fiscal_period_end": "2023-09-30",
+  "filing_url": null,
+  "raw_document_path": "raw_filings/SYNTH-AMZN-20230728-03.json",
+  "is_synthetic": true,
+  "notice": "Synthetic demonstration filing; not an actual SEC filing.",
+  "sections": [
+    {
+      "section_name": "Item 1A: Risk Factors",
+      "paragraphs": [
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AMZN_2023_margin_compression",
+          "paragraph_text": "If we cannot pass increased costs to customers, our operating margins and cash flow could be adversely affected.",
+          "risk_category": "margin_compression"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AMZN_2023_customer_churn",
+          "paragraph_text": "Changes in customer purchasing behavior may make demand less predictable and increase sales volatility.",
+          "risk_category": "customer_churn"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AMZN_2023_supply_chain",
+          "paragraph_text": "Supplier capacity constraints and higher input costs could reduce our ability to meet demand and may pressure gross margins.",
+          "risk_category": "supply_chain"
+        },
+        {
+          "section_name": "Item 1A: Risk Factors",
+          "paragraph_id": "AMZN_2023_receivables_revenue",
+          "paragraph_text": "Delays in collecting customer payments may increase accounts receivable and working-capital requirements. Credit losses or disputes could affect cash flow.",
+          "risk_category": "receivables_revenue"
+        }
+      ]
+    },
+    {
+      "section_name": "Item 7: MD&A",
+      "paragraphs": [
+        {
+          "paragraph_id": "SYNTH-AMZN-20230728-03_MDNA_1",
+          "paragraph_text": "Management continues to monitor revenue growth, operating expenses, working capital, and capital allocation. Results may be affected by customer demand, product mix, foreign exchange movements, and changes in the cost of operations. These statements are illustrative synthetic content created for software testing and are not extracted from an actual filing.",
+          "risk_category": "other"
+        }
+      ]
+    }
+  ]
+}
