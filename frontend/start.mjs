@@ -17,17 +17,22 @@ if (!existsSync(viteEntry)) {
   process.exit(1);
 }
 
-const api = spawn(python, ['-u', 'scripts/local_web_server.py'], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+const apiPort = process.env.SECULENSE_PORT || '8000';
+const api = spawn(python, ['-u', 'scripts/local_web_server.py'], {
+  cwd: root,
+  env: { ...process.env, SECULENSE_PORT: apiPort, SECULENSE_API_PORT: apiPort },
+  stdio: ['ignore', 'pipe', 'pipe'],
+});
 let apiReady = false;
 const apiReadyPromise = new Promise((resolve, reject) => {
-  const timeout = setTimeout(() => reject(new Error('Local auth API did not start on port 8765.')), 10000);
+  const timeout = setTimeout(() => reject(new Error(`Local Python API did not start on port ${apiPort}.`)), 10000);
   api.stdout.on('data', (chunk) => {
     const output = chunk.toString(); process.stdout.write(output);
     if (output.includes('listening on')) { apiReady = true; clearTimeout(timeout); resolve(); }
   });
   api.stderr.on('data', (chunk) => process.stderr.write(chunk));
   api.on('error', (error) => { clearTimeout(timeout); reject(error); });
-  api.on('exit', (code) => { if (!apiReady) { clearTimeout(timeout); reject(new Error(`Local auth API exited before starting (code ${code}).`)); } });
+  api.on('exit', (code) => { if (!apiReady) { clearTimeout(timeout); reject(new Error(`Local Python API exited before starting (code ${code}).`)); } });
 });
 try { await apiReadyPromise; }
 catch (error) { api.kill(); console.error(error.message); process.exit(1); }
