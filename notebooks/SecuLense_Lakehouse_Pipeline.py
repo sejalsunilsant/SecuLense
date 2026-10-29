@@ -1,7 +1,11 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # SecuLense · Databricks Lakehouse Pipeline (Bronze → Silver → Gold)
-# MAGIC 
+# MAGIC
 # MAGIC This notebook runs the distributed **PySpark & Delta Lake** data pipeline for the SecuLense Financial Research Platform:
 # MAGIC 1. **Bronze Layer**: Raw SEC EDGAR filing submissions and market data.
 # MAGIC 2. **Silver Layer**: Cleaned, standardized, schema-validated corporate financials and price series.
@@ -72,7 +76,7 @@ tables = [
 ]
 
 for tbl in tables:
-    path = f"{gold_dir}/{tbl}.parquet"
+    path = os.path.abspath(f"{gold_dir}/{tbl}.parquet")
     if os.path.exists(path):
         df = spark.read.parquet(path)
         df.createOrReplaceTempView(f"seculense_{tbl}")
@@ -155,4 +159,3 @@ display(
     )
     .orderBy("horizon")
 )
-

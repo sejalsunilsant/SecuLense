@@ -1,0 +1,47 @@
+{
+  "lakehouse_status": "Healthy (Synchronized)",
+  "architecture": "Databricks Delta Lake / PySpark Lakehouse",
+  "medallion_layers": {
+    "bronze": {
+      "status": "Verified",
+      "records": 11,
+      "source": "SEC EDGAR Submissions API"
+    },
+    "silver": {
+      "status": "Standardized",
+      "records": 5098,
+      "schema_validated": true
+    },
+    "gold": {
+      "status": "Active & Partitioned",
+      "tables_count": 10,
+      "data_quality_score": 100.0
+    }
+  },
+  "last_ingestion_utc": "2026-10-29T01:51:22.679679+00:00",
+  "data_freshness": "Fresh as of Today",
+  "data_source_verification": {
+    "sec_edgar_api": {
+      "status": "Connected",
+      "agent": "SecuLense research contact@example.com",
+      "real_filings": true
+    },
+    "market_data_api": {
+      "status": "Connected",
+      "real_prices": true
+    }
+  },
+  "synthetic_data_present": false,
+  "disclaimer": "All corporate disclosures and market prices represent authentic public company data. Non-disclosed metrics are explicitly labeled as unavailable.",
+  "tables": {
+    "companies": 6,
+    "filings": 11,
+    "filing_diffs": 9,
+    "risk_scores": 9,
+    "daily_prices": 5076,
+    "event_returns": 55,
+    "fundamentals": 22,
+    "company_comparisons": 6,
+    "watchlist_alerts": 5
+  }
+}
