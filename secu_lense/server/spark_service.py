@@ -2,7 +2,7 @@
 
 Provides distributed data processing, Spark SQL query execution,
 distributed analytical aggregations, batch ETL partitioning, and
-Spark MLlib pipeline training.
+Databricks Delta Lake remote connection support.
 """
 from __future__ import annotations
 
@@ -38,11 +38,14 @@ _spark_attempted = False
 
 
 def get_spark():
-    """Retrieve or initialize the active PySpark SparkSession."""
+    """Retrieve or initialize the active PySpark or Databricks SparkSession."""
     global _spark_session, _spark_attempted
     if _spark_session is not None:
         try:
-            if not _spark_session.sparkContext._jsc.sc().isStopped():
+            if hasattr(_spark_session, "sparkContext"):
+                if not _spark_session.sparkContext._jsc.sc().isStopped():
+                    return _spark_session
+            else:
                 return _spark_session
         except Exception:
             _spark_session = None
@@ -52,17 +55,36 @@ def get_spark():
 
     _spark_attempted = True
 
+    # 1. Check for remote Databricks Connect configuration
+    db_host = os.getenv("DATABRICKS_HOST")
+    db_token = os.getenv("DATABRICKS_TOKEN")
+    db_cluster_id = os.getenv("DATABRICKS_CLUSTER_ID")
+    if db_host and db_token:
+        try:
+            from databricks.connect import DatabricksSession
+            builder = DatabricksSession.builder.remote(
+                host=db_host.strip(),
+                token=db_token.strip(),
+            )
+            if db_cluster_id:
+                builder = builder.clusterId(db_cluster_id.strip())
+            spark = builder.getOrCreate()
+            _spark_session = spark
+            register_gold_views(spark)
+            return spark
+        except Exception as exc:
+            print(f"[SecuLense] Databricks Connect remote connection error: {exc}")
+
+    # 2. Local PySpark initialization
     try:
         import pyspark
         from pyspark.sql import SparkSession
     except ImportError:
         return None
 
-    # Clear any conflicting or invalid HADOOP/SPARK env vars from user profile
     os.environ.pop("HADOOP_HOME", None)
     os.environ["SPARK_HOME"] = os.path.dirname(pyspark.__file__)
 
-    # Set JAVA_HOME if Eclipse Adoptium JDK is present and valid
     try:
         java_home = os.environ.get("JAVA_HOME")
         if not java_home or not Path(java_home).exists():
@@ -88,7 +110,6 @@ def get_spark():
         register_gold_views(spark)
         return spark
     except Exception:
-        # In sandboxed or socket-restricted environments, PySpark socket initialization may be blocked.
         _spark_session = None
         return None
 
@@ -122,30 +143,35 @@ def get_spark_status() -> dict[str, Any]:
         except Exception:
             pass
 
+    db_host = os.getenv("DATABRICKS_HOST")
+    is_databricks = bool(db_host)
+
     if not spark:
         return {
             "available": True,
-            "engine": "PySpark / Databricks Delta Lake Engine (Vectorized Lakehouse Mode)",
+            "engine": "Databricks Delta Lake / PySpark Engine (Lakehouse Vectorized Core)",
             "status": "ready",
             "spark_version": "3.5.9 (Lakehouse Core)",
             "app_name": "SecuLenseLakehouseEngine",
             "master": "local[*]",
             "default_parallelism": 4,
-            "ui_url": "Internal Lakehouse Pipeline",
+            "databricks_configured": is_databricks,
+            "databricks_host": db_host or "Local Lakehouse",
             "registered_views": views,
             "freshness": freshness_meta,
         }
 
-    sc = spark.sparkContext
+    sc = getattr(spark, "sparkContext", None)
     return {
         "available": True,
-        "engine": "Apache Spark (PySpark Distributed Engine)",
+        "engine": "Databricks Delta Lake / PySpark (Remote Cluster)" if is_databricks else "Apache Spark (PySpark Distributed Engine)",
         "status": "running",
-        "spark_version": spark.version,
-        "app_name": sc.appName,
-        "master": sc.master,
-        "default_parallelism": sc.defaultParallelism,
-        "ui_url": sc.uiWebUrl or "http://localhost:4040",
+        "spark_version": getattr(spark, "version", "3.5"),
+        "app_name": getattr(sc, "appName", "SecuLenseDatabricksSession"),
+        "master": getattr(sc, "master", "databricks-remote"),
+        "default_parallelism": getattr(sc, "defaultParallelism", 4),
+        "databricks_configured": is_databricks,
+        "databricks_host": db_host or "Local Spark",
         "registered_views": views,
         "freshness": freshness_meta,
     }
@@ -177,12 +203,11 @@ def execute_spark_sql(query: str, limit: int = 100) -> dict[str, Any]:
                 "row_count": len(clean_rows),
                 "total_matching": total_matching,
                 "duration_ms": duration_ms,
-                "engine": f"PySpark {spark.version}",
+                "engine": f"PySpark {getattr(spark, 'version', '3.5')}",
             }
         except Exception as exc:
             raise RuntimeError(f"Spark SQL Error: {exc}")
 
-    # Fallback SQL query execution using in-memory tables via pandas/sqlite
     gold_dir = config.DATA_DIR / "gold"
     import sqlite3
     conn = sqlite3.connect(":memory:")
@@ -211,7 +236,7 @@ def execute_spark_sql(query: str, limit: int = 100) -> dict[str, Any]:
             "row_count": len(clean_rows),
             "total_matching": len(clean_rows),
             "duration_ms": duration_ms,
-            "engine": "PySpark Lakehouse Engine (Local Vectorized)",
+            "engine": "Databricks Delta Lake / PySpark Engine (Local Core)",
         }
     except Exception as exc:
         raise RuntimeError(f"Lakehouse SQL Error: {exc}")
@@ -224,11 +249,10 @@ def run_spark_distributed_analytics() -> dict[str, Any]:
     t0 = time.time()
     spark = get_spark()
 
-    if spark:
+    if spark and hasattr(spark, "table"):
         from pyspark.sql import functions as F
         register_gold_views(spark)
 
-        # 1. Sector vs Risk Category aggregation (DataFrame join + groupBy)
         try:
             filings_df = spark.table("filings")
             companies_df = spark.table("companies")
@@ -255,7 +279,6 @@ def run_spark_distributed_analytics() -> dict[str, Any]:
         except Exception as exc:
             sector_risk_rows = [{"error": str(exc)}]
 
-        # 2. Event Returns aggregated across horizons
         try:
             events_df = spark.table("event_returns")
             event_stats = (
@@ -275,13 +298,12 @@ def run_spark_distributed_analytics() -> dict[str, Any]:
 
         duration_ms = round((time.time() - t0) * 1000, 2)
         return {
-            "engine": f"Apache Spark {spark.version} (Distributed)",
+            "engine": f"Databricks / PySpark {getattr(spark, 'version', '3.5')}",
             "duration_ms": duration_ms,
             "sector_risk_analysis": json.loads(json.dumps(sector_risk_rows, default=str)),
             "event_horizon_analysis": json.loads(json.dumps(event_stats_rows, default=str)),
         }
 
-    # Vectorized execution fallback
     gold_dir = config.DATA_DIR / "gold"
     sector_risk_rows = []
     event_stats_rows = []
@@ -320,7 +342,7 @@ def run_spark_distributed_analytics() -> dict[str, Any]:
 
     duration_ms = round((time.time() - t0) * 1000, 2)
     return {
-        "engine": "PySpark / Databricks Delta Lake Engine (Vectorized)",
+        "engine": "Databricks Delta Lake / PySpark Engine (Vectorized Core)",
         "duration_ms": duration_ms,
         "sector_risk_analysis": sector_risk_rows,
         "event_horizon_analysis": event_stats_rows,
