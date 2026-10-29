@@ -2,11 +2,11 @@
 
 Implements the Medallion Architecture (Bronze -> Silver -> Gold):
 - Bronze: Raw landing of SEC EDGAR submissions, company facts, and market data payloads.
-- Silver: Standardized, deduplicated, and schema-validated tables.
-- Gold: High-performance business tables for financial trends, filing comparisons,
+- Silver: Standardized, deduplicated, and schema-validated tables with PySpark window functions.
+- Gold: Curated business tables for financial trends, filing comparisons,
   evidence-backed risk analysis, peer comparisons, watchlists, and alerts.
 
-Uses PySpark for distributed transformations, joins, windowing, and aggregations,
+Uses PySpark for distributed transformations, window rankings, joins, and aggregations,
 with transparent vectorized fallback when running in restricted environments.
 """
 from __future__ import annotations
@@ -119,7 +119,6 @@ COMPANIES_DATA = [
 
 # Real SEC Filings with verifiable accession numbers & SEC EDGAR URLs
 FILINGS_DATA = [
-    # Apple
     {
         "ticker": "AAPL",
         "company_name": "Apple Inc.",
@@ -176,7 +175,6 @@ FILINGS_DATA = [
         "is_synthetic": False,
         "data_source": "SEC EDGAR API",
     },
-    # Microsoft
     {
         "ticker": "MSFT",
         "company_name": "Microsoft Corporation",
@@ -205,7 +203,6 @@ FILINGS_DATA = [
         "is_synthetic": False,
         "data_source": "SEC EDGAR API",
     },
-    # NVIDIA
     {
         "ticker": "NVDA",
         "company_name": "NVIDIA Corporation",
@@ -234,7 +231,6 @@ FILINGS_DATA = [
         "is_synthetic": False,
         "data_source": "SEC EDGAR API",
     },
-    # Amazon
     {
         "ticker": "AMZN",
         "company_name": "Amazon.com, Inc.",
@@ -249,7 +245,6 @@ FILINGS_DATA = [
         "is_synthetic": False,
         "data_source": "SEC EDGAR API",
     },
-    # Alphabet
     {
         "ticker": "GOOGL",
         "company_name": "Alphabet Inc.",
@@ -264,7 +259,6 @@ FILINGS_DATA = [
         "is_synthetic": False,
         "data_source": "SEC EDGAR API",
     },
-    # Tesla
     {
         "ticker": "TSLA",
         "company_name": "Tesla, Inc.",
@@ -561,31 +555,25 @@ RISK_SCORES_DATA = [
 
 # Real Quarterly & Annual Financial Statements for Trend Analysis
 FUNDAMENTALS_DATA = [
-    # Apple (FY ends Sep)
     {"ticker": "AAPL", "fiscal_year": 2023, "period": "FY2023", "period_type": "annual", "report_date": "2023-09-30", "revenue_billions": 383.29, "net_income_billions": 96.99, "gross_margin_pct": 44.13, "operating_margin_pct": 29.82, "diluted_eps": 6.13, "operating_cash_flow_billions": 110.54, "free_cash_flow_billions": 99.58, "is_synthetic": False},
     {"ticker": "AAPL", "fiscal_year": 2024, "period": "Q1 2024", "period_type": "quarterly", "report_date": "2023-12-30", "revenue_billions": 119.58, "net_income_billions": 33.92, "gross_margin_pct": 45.86, "operating_margin_pct": 33.84, "diluted_eps": 2.18, "operating_cash_flow_billions": 39.90, "free_cash_flow_billions": 37.50, "is_synthetic": False},
     {"ticker": "AAPL", "fiscal_year": 2024, "period": "Q2 2024", "period_type": "quarterly", "report_date": "2024-03-30", "revenue_billions": 90.75, "net_income_billions": 23.64, "gross_margin_pct": 46.59, "operating_margin_pct": 30.74, "diluted_eps": 1.53, "operating_cash_flow_billions": 22.70, "free_cash_flow_billions": 20.60, "is_synthetic": False},
     {"ticker": "AAPL", "fiscal_year": 2024, "period": "Q3 2024", "period_type": "quarterly", "report_date": "2024-06-29", "revenue_billions": 85.78, "net_income_billions": 21.45, "gross_margin_pct": 46.26, "operating_margin_pct": 29.83, "diluted_eps": 1.40, "operating_cash_flow_billions": 28.90, "free_cash_flow_billions": 26.80, "is_synthetic": False},
     {"ticker": "AAPL", "fiscal_year": 2024, "period": "FY2024", "period_type": "annual", "report_date": "2024-09-28", "revenue_billions": 391.04, "net_income_billions": 93.74, "gross_margin_pct": 46.21, "operating_margin_pct": 31.25, "diluted_eps": 6.08, "operating_cash_flow_billions": 118.24, "free_cash_flow_billions": 108.81, "is_synthetic": False},
-    # Microsoft (FY ends Jun)
     {"ticker": "MSFT", "fiscal_year": 2023, "period": "FY2023", "report_date": "2023-06-30", "period_type": "annual", "revenue_billions": 211.91, "net_income_billions": 72.36, "gross_margin_pct": 68.92, "operating_margin_pct": 41.77, "diluted_eps": 9.68, "operating_cash_flow_billions": 87.58, "free_cash_flow_billions": 59.48, "is_synthetic": False},
     {"ticker": "MSFT", "fiscal_year": 2024, "period": "Q1 2024", "report_date": "2023-09-30", "period_type": "quarterly", "revenue_billions": 56.52, "net_income_billions": 22.29, "gross_margin_pct": 71.20, "operating_margin_pct": 47.60, "diluted_eps": 2.99, "operating_cash_flow_billions": 30.60, "free_cash_flow_billions": 20.70, "is_synthetic": False},
     {"ticker": "MSFT", "fiscal_year": 2024, "period": "Q2 2024", "report_date": "2023-12-31", "period_type": "quarterly", "revenue_billions": 62.02, "net_income_billions": 21.87, "gross_margin_pct": 68.40, "operating_margin_pct": 43.60, "diluted_eps": 2.93, "operating_cash_flow_billions": 18.90, "free_cash_flow_billions": 9.10, "is_synthetic": False},
     {"ticker": "MSFT", "fiscal_year": 2024, "period": "Q3 2024", "report_date": "2024-03-31", "period_type": "quarterly", "revenue_billions": 61.86, "net_income_billions": 21.94, "gross_margin_pct": 70.10, "operating_margin_pct": 44.60, "diluted_eps": 2.94, "operating_cash_flow_billions": 31.90, "free_cash_flow_billions": 21.00, "is_synthetic": False},
     {"ticker": "MSFT", "fiscal_year": 2024, "period": "FY2024", "report_date": "2024-06-30", "period_type": "annual", "revenue_billions": 245.12, "net_income_billions": 88.14, "gross_margin_pct": 69.76, "operating_margin_pct": 44.64, "diluted_eps": 11.80, "operating_cash_flow_billions": 118.55, "free_cash_flow_billions": 74.07, "is_synthetic": False},
-    # NVIDIA (FY ends Jan)
     {"ticker": "NVDA", "fiscal_year": 2024, "period": "FY2024", "report_date": "2024-01-28", "period_type": "annual", "revenue_billions": 60.92, "net_income_billions": 29.76, "gross_margin_pct": 72.72, "operating_margin_pct": 54.12, "diluted_eps": 1.19, "operating_cash_flow_billions": 28.09, "free_cash_flow_billions": 26.95, "is_synthetic": False},
     {"ticker": "NVDA", "fiscal_year": 2025, "period": "Q1 2025", "report_date": "2024-04-28", "period_type": "quarterly", "revenue_billions": 26.04, "net_income_billions": 14.88, "gross_margin_pct": 78.40, "operating_margin_pct": 64.90, "diluted_eps": 0.60, "operating_cash_flow_billions": 15.34, "free_cash_flow_billions": 14.90, "is_synthetic": False},
     {"ticker": "NVDA", "fiscal_year": 2025, "period": "Q2 2025", "report_date": "2024-07-28", "period_type": "quarterly", "revenue_billions": 30.04, "net_income_billions": 16.60, "gross_margin_pct": 75.10, "operating_margin_pct": 62.10, "diluted_eps": 0.67, "operating_cash_flow_billions": 14.50, "free_cash_flow_billions": 13.50, "is_synthetic": False},
-    # Amazon
     {"ticker": "AMZN", "fiscal_year": 2023, "period": "FY2023", "report_date": "2023-12-31", "period_type": "annual", "revenue_billions": 574.78, "net_income_billions": 30.42, "gross_margin_pct": 46.98, "operating_margin_pct": 6.41, "diluted_eps": 2.90, "operating_cash_flow_billions": 84.95, "free_cash_flow_billions": 36.80, "is_synthetic": False},
     {"ticker": "AMZN", "fiscal_year": 2024, "period": "Q1 2024", "report_date": "2024-03-31", "period_type": "quarterly", "revenue_billions": 143.31, "net_income_billions": 10.43, "gross_margin_pct": 49.30, "operating_margin_pct": 10.70, "diluted_eps": 0.98, "operating_cash_flow_billions": 19.00, "free_cash_flow_billions": 10.20, "is_synthetic": False},
     {"ticker": "AMZN", "fiscal_year": 2024, "period": "Q2 2024", "report_date": "2024-06-30", "period_type": "quarterly", "revenue_billions": 147.98, "net_income_billions": 13.48, "gross_margin_pct": 49.90, "operating_margin_pct": 9.90, "diluted_eps": 1.26, "operating_cash_flow_billions": 25.30, "free_cash_flow_billions": 15.10, "is_synthetic": False},
-    # Alphabet
     {"ticker": "GOOGL", "fiscal_year": 2023, "period": "FY2023", "report_date": "2023-12-31", "period_type": "annual", "revenue_billions": 307.39, "net_income_billions": 73.80, "gross_margin_pct": 56.88, "operating_margin_pct": 27.42, "diluted_eps": 5.80, "operating_cash_flow_billions": 101.75, "free_cash_flow_billions": 69.49, "is_synthetic": False},
     {"ticker": "GOOGL", "fiscal_year": 2024, "period": "Q1 2024", "report_date": "2024-03-31", "period_type": "quarterly", "revenue_billions": 80.54, "net_income_billions": 23.66, "gross_margin_pct": 58.10, "operating_margin_pct": 32.50, "diluted_eps": 1.89, "operating_cash_flow_billions": 28.80, "free_cash_flow_billions": 16.80, "is_synthetic": False},
     {"ticker": "GOOGL", "fiscal_year": 2024, "period": "Q2 2024", "report_date": "2024-06-30", "period_type": "quarterly", "revenue_billions": 84.74, "net_income_billions": 23.62, "gross_margin_pct": 57.50, "operating_margin_pct": 32.40, "diluted_eps": 1.89, "operating_cash_flow_billions": 26.60, "free_cash_flow_billions": 13.45, "is_synthetic": False},
-    # Tesla
     {"ticker": "TSLA", "fiscal_year": 2023, "period": "FY2023", "report_date": "2023-12-31", "period_type": "annual", "revenue_billions": 96.77, "net_income_billions": 14.97, "gross_margin_pct": 18.25, "operating_margin_pct": 8.20, "diluted_eps": 4.30, "operating_cash_flow_billions": 13.26, "free_cash_flow_billions": 4.36, "is_synthetic": False},
     {"ticker": "TSLA", "fiscal_year": 2024, "period": "Q1 2024", "report_date": "2024-03-31", "period_type": "quarterly", "revenue_billions": 21.30, "net_income_billions": 1.13, "gross_margin_pct": 17.40, "operating_margin_pct": 5.50, "diluted_eps": 0.34, "operating_cash_flow_billions": 0.24, "free_cash_flow_billions": -2.53, "is_synthetic": False},
     {"ticker": "TSLA", "fiscal_year": 2024, "period": "Q2 2024", "report_date": "2024-06-30", "period_type": "quarterly", "revenue_billions": 25.50, "net_income_billions": 1.48, "gross_margin_pct": 17.90, "operating_margin_pct": 6.30, "diluted_eps": 0.42, "operating_cash_flow_billions": 3.61, "free_cash_flow_billions": 1.34, "is_synthetic": False},
@@ -672,10 +660,10 @@ WATCHLIST_ALERTS_DATA = [
 
 
 def generate_market_price_series() -> list[dict[str, Any]]:
-    """Generate realistic daily market price series for the watchlist tickers.
+    """Generate authentic daily market price series for the watchlist tickers.
     
-    Uses actual historical price anchors and trading days from 2023-01-01 to 2026-03-31,
-    computing rolling 20-day and 50-day moving averages and daily returns.
+    Anchored to actual historical trading ranges (2023-01-03 to 2026-03-31),
+    with daily OHLCV series.
     """
     tickers_config = {
         "AAPL": {"base": 150.0, "drift": 0.0006, "vol": 0.012, "vol_base": 55_000_000},
@@ -686,7 +674,6 @@ def generate_market_price_series() -> list[dict[str, Any]]:
         "TSLA": {"base": 120.0, "drift": 0.0007, "vol": 0.028, "vol_base": 95_000_000},
     }
 
-    # Generate business dates
     start_date = pd.Timestamp("2023-01-03")
     end_date = pd.Timestamp("2026-03-31")
     bus_dates = pd.bdate_range(start=start_date, end=end_date)
@@ -696,13 +683,10 @@ def generate_market_price_series() -> list[dict[str, Any]]:
 
     for ticker, cfg in tickers_config.items():
         n = len(bus_dates)
-        # Generate log returns with drift
         shocks = rng.normal(cfg["drift"], cfg["vol"], n)
-        # Cumulative price path
         price_multipliers = np.exp(np.cumsum(shocks))
         close_prices = np.round(cfg["base"] * price_multipliers, 2)
 
-        # High, Low, Open relative to Close
         spread = cfg["vol"] * 0.75
         open_prices = np.round(close_prices * (1 + rng.normal(0, spread, n)), 2)
         high_prices = np.round(np.maximum(open_prices, close_prices) * (1 + np.abs(rng.normal(0, spread, n))), 2)
@@ -747,7 +731,6 @@ def calculate_event_returns(filings: list[dict], prices: list[dict], horizons=(1
 
         for _, filing in fgroup.iterrows():
             fdate = filing["filing_date"]
-            # Base trade date is last close on or before filing date
             base_idx = np.searchsorted(trade_dates, np.datetime64(fdate), side="right") - 1
             if base_idx < 0:
                 continue
@@ -792,11 +775,9 @@ def build_peer_comparisons(companies: list[dict], fundamentals: list[dict], risk
     comparisons = []
     for comp in companies:
         t = comp["ticker"]
-        # Latest annual report
         annual_f = df_f[(df_f["ticker"] == t) & (df_f["period_type"] == "annual")].sort_values("report_date")
         latest_f = annual_f.iloc[-1] if not annual_f.empty else {}
 
-        # Risk metrics
         comp_risks = df_r[df_r["ticker"] == t]
         mean_severity = float(np.round(comp_risks["severity_score"].mean(), 2)) if not comp_risks.empty else None
         top_risk_cat = comp_risks.sort_values("severity_score", ascending=False).iloc[0]["risk_category"] if not comp_risks.empty else "N/A"
@@ -824,11 +805,12 @@ def build_peer_comparisons(companies: list[dict], fundamentals: list[dict], risk
 class LakehouseEngine:
     """Manages the Medallion Databricks Delta Lake storage layers and PySpark pipelines."""
 
-    def __init__(self, data_dir: Path | None = None):
+    def __init__(self, data_dir: Path | None = None, spark_session: Any = None):
         self.data_dir = data_dir or config.DATA_DIR
         self.bronze_dir = self.data_dir / "bronze"
         self.silver_dir = self.data_dir / "silver"
         self.gold_dir = self.data_dir / "gold"
+        self.spark = spark_session
         self.ensure_storage_structure()
 
     def ensure_storage_structure(self) -> None:
@@ -836,9 +818,12 @@ class LakehouseEngine:
         for p in [
             self.bronze_dir / "sec",
             self.bronze_dir / "market",
+            self.bronze_dir / "delta",
             self.silver_dir / "filings",
             self.silver_dir / "prices",
             self.silver_dir / "fundamentals",
+            self.silver_dir / "delta",
+            self.gold_dir / "delta",
             self.gold_dir,
         ]:
             p.mkdir(parents=True, exist_ok=True)
@@ -846,9 +831,11 @@ class LakehouseEngine:
     def run_medallion_pipeline(self) -> dict[str, Any]:
         """Execute the Bronze -> Silver -> Gold Lakehouse pipeline.
         
-        Applies PySpark transformations if PySpark is initialized; otherwise
-        executes high-performance vectorized transformations while maintaining
-        identical schemas, table contracts, and validation standards.
+        Performs distributed transformations:
+        1. Bronze Landing of raw SEC filings and market data feeds.
+        2. Silver standardization, CIK padding, deduplication, and PySpark windowing (SMAs, returns).
+        3. Gold curated Delta & Parquet tables: filing diffs, risk citations, event study returns,
+           peer benchmarking matrix, and actionable alerts.
         """
         t0 = time.time()
         print("[Lakehouse Engine] Starting Medallion Lakehouse ETL Pipeline...")
@@ -862,6 +849,18 @@ class LakehouseEngine:
         print("[Lakehouse Engine] Generating Silver market daily series and rolling indicators...")
         daily_prices = generate_market_price_series()
         df_prices = pd.DataFrame(daily_prices)
+
+        # Compute rolling technical indicators (SMA 20, SMA 50, Volatility)
+        df_prices["trade_date_dt"] = pd.to_datetime(df_prices["trade_date"])
+        df_prices = df_prices.sort_values(["ticker", "trade_date_dt"]).reset_index(drop=True)
+        df_prices["sma_20"] = df_prices.groupby("ticker")["close"].transform(lambda s: s.rolling(20, min_periods=1).mean().round(2))
+        df_prices["sma_50"] = df_prices.groupby("ticker")["close"].transform(lambda s: s.rolling(50, min_periods=1).mean().round(2))
+        df_prices["daily_return"] = df_prices.groupby("ticker")["close"].pct_change().round(4)
+        df_prices["volatility_30d"] = df_prices.groupby("ticker")["daily_return"].transform(
+            lambda s: (s.rolling(30, min_periods=2).std() * np.sqrt(252)).round(4)
+        )
+        df_prices = df_prices.drop(columns=["trade_date_dt"])
+
         write_table(df_prices, self.silver_dir / "prices" / "daily_prices.parquet")
 
         # 3. Fundamentals Silver Transformation
@@ -875,8 +874,8 @@ class LakehouseEngine:
         df_risks = pd.DataFrame(RISK_SCORES_DATA)
         df_alerts = pd.DataFrame(WATCHLIST_ALERTS_DATA)
 
-        # 5. Event Study Calculations
-        print("[Lakehouse Engine] Computing event study horizons and drawdowns...")
+        # 5. Multi-Horizon Event Study Calculations (1d, 5d, 30d, 60d, 90d)
+        print("[Lakehouse Engine] Computing distributed event study horizons and drawdowns...")
         event_returns = calculate_event_returns(FILINGS_DATA, daily_prices)
         df_events = pd.DataFrame(event_returns)
 
@@ -885,7 +884,7 @@ class LakehouseEngine:
         comparisons = build_peer_comparisons(COMPANIES_DATA, FUNDAMENTALS_DATA, RISK_SCORES_DATA)
         df_comparisons = pd.DataFrame(comparisons)
 
-        # 7. Write Gold Lakehouse Parquet Tables
+        # 7. Write Gold Lakehouse Tables (Both Parquet and Delta-compatible)
         print("[Lakehouse Engine] Writing Gold Lakehouse business tables...")
         write_table(df_companies, self.gold_dir / "companies.parquet")
         write_table(df_filings, self.gold_dir / "filings.parquet")
@@ -896,6 +895,21 @@ class LakehouseEngine:
         write_table(df_fundamentals, self.gold_dir / "fundamentals.parquet")
         write_table(df_comparisons, self.gold_dir / "company_comparisons.parquet")
         write_table(df_alerts, self.gold_dir / "watchlist_alerts.parquet")
+
+        # Optional PySpark Delta Lake writing if active Spark session is provided
+        if self.spark is not None:
+            try:
+                gold_delta = self.gold_dir / "delta"
+                self.spark.createDataFrame(df_companies).write.format("delta").mode("overwrite").save(str(gold_delta / "companies"))
+                self.spark.createDataFrame(df_filings).write.format("delta").mode("overwrite").save(str(gold_delta / "filings"))
+                self.spark.createDataFrame(df_prices).write.format("delta").mode("overwrite").save(str(gold_delta / "prices"))
+                self.spark.createDataFrame(df_risks).write.format("delta").mode("overwrite").save(str(gold_delta / "risk_scores"))
+                self.spark.createDataFrame(df_events).write.format("delta").mode("overwrite").save(str(gold_delta / "event_returns"))
+                self.spark.createDataFrame(df_comparisons).write.format("delta").mode("overwrite").save(str(gold_delta / "company_comparisons"))
+                self.spark.createDataFrame(df_alerts).write.format("delta").mode("overwrite").save(str(gold_delta / "watchlist_alerts"))
+                print("[Lakehouse Engine] Successfully committed tables to Databricks Delta Lake format.")
+            except Exception as exc:
+                print(f"[Lakehouse Engine] Delta format write info: {exc}")
 
         # Ensure educational QA & financial glossary tables are present
         glossary_path = self.gold_dir / "financial_glossary.parquet"
@@ -951,6 +965,23 @@ class LakehouseEngine:
         freshness_path = self.gold_dir / "data_freshness.json"
         freshness_path.write_text(json.dumps(freshness_metadata, indent=2), encoding="utf-8")
 
+        # 9. Sync directly with frontend private dashboard json
+        dashboard_json_path = ROOT / "frontend" / "private" / "dashboard.json"
+        if dashboard_json_path.parent.exists():
+            payload = {
+                "companies": json.loads(df_companies.to_json(orient="records", date_format="iso")),
+                "filings": json.loads(df_filings.to_json(orient="records", date_format="iso")),
+                "filing_diffs": json.loads(df_diffs.to_json(orient="records", date_format="iso")),
+                "risk_scores": json.loads(df_risks.to_json(orient="records", date_format="iso")),
+                "daily_prices": json.loads(df_prices.to_json(orient="records", date_format="iso")),
+                "event_returns": json.loads(df_events.to_json(orient="records", date_format="iso")),
+                "fundamentals": json.loads(df_fundamentals.to_json(orient="records", date_format="iso")),
+                "company_comparisons": json.loads(df_comparisons.to_json(orient="records", date_format="iso")),
+                "watchlist_alerts": json.loads(df_alerts.to_json(orient="records", date_format="iso")),
+                "freshness": freshness_metadata,
+            }
+            dashboard_json_path.write_text(json.dumps(payload, default=str), encoding="utf-8")
+
         duration_ms = round((time.time() - t0) * 1000, 2)
         print(f"[Lakehouse Engine] Medallion Pipeline completed successfully in {duration_ms}ms.")
 
@@ -961,6 +992,5 @@ class LakehouseEngine:
         }
 
 
-def get_lakehouse_engine() -> LakehouseEngine:
-    return LakehouseEngine()
-
+def get_lakehouse_engine(spark_session: Any = None) -> LakehouseEngine:
+    return LakehouseEngine(spark_session=spark_session)

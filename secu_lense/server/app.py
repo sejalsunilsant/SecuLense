@@ -141,6 +141,23 @@ def load_all_datasets() -> dict:
     else:
         data["freshness"] = {}
 
+    if missing and not DATA_FILE.exists():
+        try:
+            from secu_lense.lakehouse import get_lakehouse_engine
+            engine = get_lakehouse_engine()
+            engine.run_medallion_pipeline()
+            # Reload freshly generated tables
+            for table in TABLES:
+                parquet_path = gold_dir / f"{table}.parquet"
+                if parquet_path.exists():
+                    df = read_table(parquet_path)
+                    data[table] = json.loads(df.to_json(orient="records", date_format="iso"))
+            if freshness_path.exists():
+                data["freshness"] = json.loads(freshness_path.read_text(encoding="utf-8"))
+            missing = False
+        except Exception:
+            pass
+
     if not missing and all(t in data for t in TABLES):
         dataset_cache = (now, data)
         return data
@@ -369,6 +386,24 @@ def get_freshness(_: dict = Depends(require_user)):
             except Exception:
                 pass
     return freshness or {"status": "synced", "data_freshness": "Fresh as of Today"}
+
+
+@app.post("/api/lakehouse/refresh")
+def refresh_lakehouse(_: dict = Depends(require_user)):
+    """Run the PySpark / Databricks Delta Lake medallion pipeline and refresh datasets."""
+    global dataset_cache
+    from secu_lense.lakehouse import get_lakehouse_engine
+    engine = get_lakehouse_engine()
+    result = engine.run_medallion_pipeline()
+    dataset_cache = None  # Invalidate cache
+    return {"message": "Medallion Lakehouse pipeline executed successfully", "result": result}
+
+
+@app.get("/api/lakehouse/status")
+def lakehouse_status(_: dict = Depends(require_user)):
+    """Return status of Lakehouse Medallion layers and table row counts."""
+    from secu_lense.server.spark_service import get_spark_status
+    return get_spark_status()
 
 
 # ---------------------------------------------------------------------------

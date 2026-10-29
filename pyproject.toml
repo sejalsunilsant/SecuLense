@@ -5,17 +5,17 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "seculense"
 version = "0.1.0"
-description = "Educational corporate filing risk research platform"
+description = "Financial research platform powered by PySpark and Databricks Delta Lake"
 requires-python = ">=3.10"
 dependencies = [
-  "pandas>=2.0,<3", "numpy>=1.24,<3", "pyarrow>=14", "pydantic>=2.5,<3",
+  "pandas>=2.0", "numpy>=1.24", "pyarrow>=14", "pydantic>=2.5",
   "requests>=2.31", "beautifulsoup4>=4.12", "yfinance>=0.2.40",
-  "scikit-learn>=1.3", "fastapi>=0.110", "uvicorn>=0.28", "pyspark>=3.5,<4",
+  "scikit-learn>=1.3", "fastapi>=0.110", "uvicorn>=0.28",
   "plotly>=5.18", "matplotlib>=3.7", "python-dotenv>=1.0"
 ]
 
 [project.optional-dependencies]
-spark = ["pyspark>=3.5,<4"]
+spark = ["pyspark>=3.5"]
 rag = ["sentence-transformers>=2.6", "faiss-cpu>=1.8"]
 dev = ["pytest>=8", "ruff>=0.4"]
 

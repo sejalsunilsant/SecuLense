@@ -16,6 +16,8 @@ from secu_lense.server.app import (
     get_watchlist,
     toggle_watchlist,
     WatchlistToggleRequest,
+    refresh_lakehouse,
+    lakehouse_status,
 )
 
 
@@ -111,6 +113,17 @@ class TestSecuLenseFastAPI(unittest.TestCase):
         self.assertIn("available", res)
         self.assertIn("engine", res)
         self.assertIn("registered_views", res)
+
+
+    def test_lakehouse_endpoints(self):
+        user = {"id": 1, "username": "test"}
+        status_res = lakehouse_status(user)
+        self.assertIn("engine", status_res)
+        self.assertIn("registered_views", status_res)
+
+        refresh_res = refresh_lakehouse(user)
+        self.assertEqual(refresh_res["message"], "Medallion Lakehouse pipeline executed successfully")
+        self.assertEqual(refresh_res["result"]["status"], "success")
 
 
 if __name__ == "__main__":

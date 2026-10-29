@@ -4,7 +4,11 @@ import hashlib, html, re, time
 from pathlib import Path
 from typing import Any
 import requests
-from bs4 import BeautifulSoup
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
 
 SEC_TICKERS = "https://www.sec.gov/files/company_tickers.json"
 SUBMISSIONS = "https://data.sec.gov/submissions/CIK{cik}.json"
@@ -44,18 +48,30 @@ def fetch_filings(ticker: str, cik: str, start: str, end: str, user_agent: str, 
     return out
 
 def clean_html(raw: str) -> str:
-    soup=BeautifulSoup(raw, "html.parser")
-    for tag in soup(["script","style","ix:header","header","footer","nav"]): tag.decompose()
-    for br in soup.find_all(["br","p","div","tr"]): br.insert_after("\n")
-    text=html.unescape(soup.get_text(" ", strip=True))
+    if BeautifulSoup is not None:
+        soup=BeautifulSoup(raw, "html.parser")
+        for tag in soup(["script","style","ix:header","header","footer","nav"]): tag.decompose()
+        for br in soup.find_all(["br","p","div","tr"]): br.insert_after("\n")
+        text=html.unescape(soup.get_text(" ", strip=True))
+    else:
+        text = re.sub(r"<(script|style|ix:header|header|footer|nav)[^>]*>.*?</\1>", "", raw, flags=re.DOTALL | re.IGNORECASE)
+        text = re.sub(r"<br\s*/?>|</p>|</div>|</tr>", "\n", text, flags=re.IGNORECASE)
+        text = re.sub(r"<[^>]+>", " ", text)
+        text = html.unescape(text)
     text=re.sub(r"\s+", " ", text)
     return text.strip()
 
 def extract_sections(raw: str) -> dict[str, dict[str, Any]]:
     """Extract Item 1A / 7 with heading variants; status is never silently empty."""
-    soup=BeautifulSoup(raw, "html.parser")
-    for tag in soup(["script","style","ix:header","header","footer","nav"]): tag.decompose()
-    text=html.unescape(soup.get_text("\n", strip=True))
+    if BeautifulSoup is not None:
+        soup=BeautifulSoup(raw, "html.parser")
+        for tag in soup(["script","style","ix:header","header","footer","nav"]): tag.decompose()
+        text=html.unescape(soup.get_text("\n", strip=True))
+    else:
+        text = re.sub(r"<(script|style|ix:header|header|footer|nav)[^>]*>.*?</\1>", "", raw, flags=re.DOTALL | re.IGNORECASE)
+        text = re.sub(r"<br\s*/?>|</p>|</div>|</tr>", "\n", text, flags=re.IGNORECASE)
+        text = re.sub(r"<[^>]+>", " ", text)
+        text = html.unescape(text)
     text=re.sub(r"[ \t\xa0]+", " ", text)
     lines=[re.sub(r"\s+"," ",x).strip() for x in text.splitlines() if x.strip()]
     headings=[]

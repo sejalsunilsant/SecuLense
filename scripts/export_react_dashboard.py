@@ -1,12 +1,14 @@
 """Export the locally loaded Parquet demo tables for the React dashboard."""
 from pathlib import Path
 import json
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from secu_lense import config
 from secu_lense.sources import read_table
-
-
-ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "frontend" / "private" / "dashboard.json"
 TABLES = (
     "companies",
@@ -24,6 +26,13 @@ TABLES = (
 
 
 def main() -> None:
+    companies_parquet = config.DATA_DIR / "gold" / "companies.parquet"
+    if not companies_parquet.exists():
+        print("[Export] Gold Lakehouse tables not found. Executing Medallion Pipeline...")
+        from secu_lense.lakehouse import get_lakehouse_engine
+        engine = get_lakehouse_engine()
+        engine.run_medallion_pipeline()
+
     payload = {}
     for name in TABLES:
         path = config.DATA_DIR / "gold" / f"{name}.parquet"
