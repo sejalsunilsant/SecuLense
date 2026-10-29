@@ -1,5 +1,10 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
+<<<<<<< HEAD
 # MAGIC # SecuLense · Enterprise Financial Research Lakehouse
 # MAGIC ## Production PySpark & Databricks Delta Lake Pipeline
 # MAGIC 
@@ -25,6 +30,14 @@
 # MAGIC    - **Multi-Company Peer Benchmarking**: Side-by-side comparative financial and valuation matrix (AAPL, MSFT, NVDA, AMZN, GOOGL, TSLA).
 # MAGIC    - **Actionable Research Alerts**: Real-time materiality alerts (regulatory lawsuits, AI export controls, supply bottlenecks).
 # MAGIC 4. **Delta Lake Optimization**: Table indexing with `ZORDER` and transaction history auditing.
+=======
+# MAGIC # SecuLense · Databricks Lakehouse Pipeline (Bronze → Silver → Gold)
+# MAGIC
+# MAGIC This notebook runs the distributed **PySpark & Delta Lake** data pipeline for the SecuLense Financial Research Platform:
+# MAGIC 1. **Bronze Layer**: Raw SEC EDGAR filing submissions and market data.
+# MAGIC 2. **Silver Layer**: Cleaned, standardized, schema-validated corporate financials and price series.
+# MAGIC 3. **Gold Layer**: Curated business analytics, paragraph-level filing diffs, evidence-backed risk analysis, peer comparisons, and actionable research alerts.
+>>>>>>> 7bcdb0b0f156e56c685ece7e2c43c3bdf90b7102
 
 # COMMAND ----------
 
@@ -132,6 +145,7 @@ df_silver_filings = (
     .dropDuplicates(["ticker", "accession_number"])
 )
 
+<<<<<<< HEAD
 # 2. Market Prices with Distributed Window Indicators
 price_window_asc = Window.partitionBy("ticker").orderBy("trade_date")
 sma20_window = Window.partitionBy("ticker").orderBy("trade_date").rowsBetween(-19, 0)
@@ -162,6 +176,14 @@ print(f"  • Enriched Prices with SMAs & Volatility: {df_silver_prices.count()}
 
 # Preview technical analysis indicators
 display(df_silver_prices.filter(F.col("ticker") == "AAPL").orderBy(F.desc("trade_date")).limit(10))
+=======
+for tbl in tables:
+    path = os.path.abspath(f"{gold_dir}/{tbl}.parquet")
+    if os.path.exists(path):
+        df = spark.read.parquet(path)
+        df.createOrReplaceTempView(f"seculense_{tbl}")
+        print(f"Registered view: seculense_{tbl} ({df.count()} rows)")
+>>>>>>> 7bcdb0b0f156e56c685ece7e2c43c3bdf90b7102
 
 # COMMAND ----------
 
@@ -392,6 +414,7 @@ print(f"✓ {df_gold_alerts.count()} Active Materiality Alerts registered.")
 
 # COMMAND ----------
 
+<<<<<<< HEAD
 # MAGIC %sql
 # MAGIC -- Audit Delta Lake ACID Transaction History
 # MAGIC DESCRIBE HISTORY delta.`data/silver/delta/prices`;
@@ -425,3 +448,16 @@ print(f"  • Execution Duration: {sync_res['duration_ms']}ms")
 print(f"  • Data Freshness: Fresh as of {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC")
 print(f"  • Medallion Tables Synchronized: 9 Gold Tables")
 print("=======================================================")
+=======
+display(
+    df_events.groupBy("horizon")
+    .agg(
+        F.count("*").alias("events_count"),
+        F.round(F.avg("cumulative_return") * 100, 2).alias("avg_return_pct"),
+        F.round(F.min("cumulative_return") * 100, 2).alias("min_return_pct"),
+        F.round(F.max("cumulative_return") * 100, 2).alias("max_return_pct"),
+        F.round(F.stddev("cumulative_return") * 100, 2).alias("volatility_pct")
+    )
+    .orderBy("horizon")
+)
+>>>>>>> 7bcdb0b0f156e56c685ece7e2c43c3bdf90b7102
